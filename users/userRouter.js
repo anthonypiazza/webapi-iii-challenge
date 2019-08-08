@@ -1,5 +1,6 @@
 const express = require('express');
 const Users = require('./userDb');
+const Posts = require('../posts/postDb');
 const router = express.Router();
 
 
@@ -62,18 +63,11 @@ router.delete('/:id', validateUserId, (req, res) => {
     })
 });
 
-
-
-
-//COULDNT GET THE TWO BELOW TO WORK
-
-
-
-
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+    req.body.user_id = req.params.id
     const newPost = req.body;
 
-    Users.insert(newPost)
+    Posts.insert(newPost)
     .then(post => {
         res.status(201).json(post)
     })
@@ -85,7 +79,8 @@ router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
 
 router.get('/:id/posts', validateUserId, (req, res) => {
     const { id } = req.params;
-    Users.getById(id)
+
+    Users.getUserPosts(id)
     .then(specificIdsPosts => {
         console.log(specificIdsPosts)
         res.status(200).json(specificIdsPosts)
@@ -131,7 +126,7 @@ function validateUser(req, res, next) {
 function validatePost(req, res, next) {
     const newPost = req.body;
 
-    if(!newPost.text || !newPost.user_id){
+    if(!newPost.text){
         res.status(400).json({ message: "missing required text field" })
     }else{
         next();
